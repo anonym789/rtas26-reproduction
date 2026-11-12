@@ -1,0 +1,8 @@
+source_id,platform,decoder,family,code,d,p,rounds,mean_ns,max_ns,unit_note,status,reference
+lit_helios_d21,fpga,Helios,union-find,surface,21,0.001,21,241.5,,11.5 ns per round x 21 rounds (paper reports average per round),literature mean; no tail,arXiv 2301.08419
+lit_liu_helios_d7,fpga,Helios (Liu et al.),union-find,surface,7,0.001,7,90,,full decode of a 7-round block (worst case stated),literature; stated worst case used as mean and max,arXiv 2603.16203
+lit_cc_fpga_d13,fpga,Collision Clustering,union-find,surface,13,0.001,13,2080,,160 ns per round x 13 rounds,literature mean; no tail,arXiv 2309.05558
+lit_cc_asic_d23,asic,Collision Clustering,union-find,surface,23,0.001,23,5520,,240 ns per round x 23 rounds,literature mean; no tail,arXiv 2309.05558
+lit_microblossom_d9,fpga,Micro Blossom,MWPM,surface,9,0.001,9,366,27494.8,artifact histogram (mean and max) full memory experiment,literature mean and max (artifact),arXiv 2502.14787 + artifact
+lit_microblossom_d13,fpga,Micro Blossom,MWPM,surface,13,0.001,13,800,,paper headline 0.8 us average,literature mean; no tail,arXiv 2502.14787
+lit_ibm_relaybp_fpga,fpga,Relay-BP (IBM FPGA),BP,bb,12,0.001,12,480,865920,~20 iterations x 24 ns per 12-cycle window; hard cap 36080 iterations,literature mean; hard bound as max,arXiv 2510.21600

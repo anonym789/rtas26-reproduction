@@ -1,0 +1,4 @@
+-r requirements.txt
+# the GPU machine: CUDA-Q QEC (nv-qldpc-decoder, closed binary under the NVIDIA Software License Agreement) and CUPTI
+cudaq-qec==0.8.1
+cupti-python==13.4.0

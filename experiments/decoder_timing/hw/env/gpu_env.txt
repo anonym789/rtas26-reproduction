@@ -1,0 +1,27 @@
+Driver Version                                         : 580.126.09
+CUDA Version                                           : 13.0
+    Product Name                                       : NVIDIA A100-SXM4-40GB
+    Persistence Mode                                   : Enabled
+    Compute Mode                                       : Default
+        Memory                                         : 0 %
+            SRAM SM                                    : 0
+    Clocks
+        Graphics                                       : 1410 MHz
+        SM                                             : 1410 MHz
+        Memory                                         : 1215 MHz
+    Applications Clocks
+        Graphics                                       : 1095 MHz
+        Memory                                         : 1215 MHz
+    Default Applications Clocks
+        Graphics                                       : 1095 MHz
+        Memory                                         : 1215 MHz
+    Deferred Clocks
+        Memory                                         : N/A
+    Max Clocks
+index, name, driver_version, pstate, clocks.current.sm [MHz], clocks.max.sm [MHz], clocks.current.memory [MHz], persistence_mode, compute_mode
+0, NVIDIA A100-SXM4-40GB, 580.126.09, P0, 1410 MHz, 1410 MHz, 1215 MHz, Enabled, Default
+1, NVIDIA A100-SXM4-40GB, 580.126.09, P0, 1410 MHz, 1410 MHz, 1215 MHz, Enabled, Default
+2, NVIDIA A100-SXM4-40GB, 580.126.09, P0, 1410 MHz, 1410 MHz, 1215 MHz, Enabled, Default
+3, NVIDIA A100-SXM4-40GB, 580.126.09, P0, 1410 MHz, 1410 MHz, 1215 MHz, Enabled, Default
+cudaq_qec CUDA-Q QEC 0.8.1 (https://github.com/NVIDIA/cudaqx e0015a269e25795fa743b1f4af76140b6ce616b0)
+cupti-python 13.4.0

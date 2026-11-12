@@ -1,0 +1,10 @@
+[project]
+name = "qecnet"
+version = "1.0.0"
+description = "The syndrome network under load: transport time from N controllers to the decoder, from a network-calculus bound and a discrete-event simulation"
+requires-python = ">=3.12"
+dependencies = ["numpy", "pandas", "simpy"]   # pinned versions: env/requirements.txt
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

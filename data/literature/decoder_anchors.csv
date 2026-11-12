@@ -1,0 +1,2 @@
+anchor,decoder,code,d,p,per_round_ns,source
+sparse_blossom_d17,pymatching,surface,17,0.001,1000,"Higgott and Gidney (Sparse Blossom, PyMatching 2): under 1 us per round for the rotated surface code at d = 17 and p = 0.1 % circuit-level noise, on one core of a laptop CPU"

@@ -1,0 +1,10 @@
+[project]
+name = "qecdec"
+version = "1.0.0"
+description = "Measurement-based timing of QEC decoders: per-shot decoding times and pWCET fits"
+requires-python = ">=3.12"
+dependencies = ["numpy", "pandas", "scipy", "stim", "stimbposd", "ldpc", "PyMatching", "sinter", "pygltflib"]   # pinned versions: env/requirements.txt
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

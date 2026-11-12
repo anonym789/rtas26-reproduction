@@ -1,0 +1,10 @@
+link,rate_bps,latency_ns,latency_low_ns,latency_high_ns,framing,element,coding,includes_ser_bits,assumed,source
+L1,12500000000,205,,,custom,link,,0,false,"B2 Riverlane QECi / QECIPHY: 190-220 ns per link, 12.5 Gb/s per lane (205 ns = mid-range, E3 sec. 4)"
+L2,16000000000,95,,,custom,link,,0,false,"B2 Eos transceiver (Yale, DECONET): 95 ns inter-FPGA link, 16 Gb/s per link"
+L3,10000000000,157,141,173,custom,link,64b66b,0,false,"B2 Lightweight GT link (QubiC/UMD, Liu et al.): 157 ns one-way, +-16 ns forward, 10 Gb/s per link"
+L4,10000000000,361.6,,,ethernet,link,,672,false,"B1 Optical Ethernet, FPGA MAC (Bristol): 361.6 ns, 64 B frame, 10 GbE B2B, min. meas."
+L5-10G,10000000000,450,,,ethernet,node,,0,false,"B2 10GbE FPGA syndrome aggregator (Kumamoto, Sakata): ~450 ns (aggregator; meas.), 10 Gb/s per port"
+L5-100G,100000000000,450,,,ethernet,node,,0,false,"B2 10GbE FPGA syndrome aggregator (Kumamoto, Sakata) at 100 Gb/s: rate from Sakata's 100GbE saturation statement (syndrome_traffic.tex), same 450 ns (E3 sec. 4)"
+L6-10G,10000000000,400,,,ethernet,node,,0,true,"no table row: commodity switch, 400 ns per hop ASSUMED (E3 sec. 4)"
+L6-100G,100000000000,400,,,ethernet,node,,0,true,"no table row: commodity switch, 400 ns per hop ASSUMED (E3 sec. 4)"
+L7,25800000000,450,,,custom,link,64b66b,0,false,"B2 Aurora 64B/66B (AMD IP): 450 ns one-way (meas.), up to 25.8 Gb/s per lane"

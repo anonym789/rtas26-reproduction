@@ -1,0 +1,10 @@
+ldpc==2.4.1
+numpy==2.5.3
+pandas==3.0.6
+PyMatching==2.4.0
+scipy==1.18.1
+sinter==1.16.0
+stim==1.16.0
+stimbposd==0.2.0
+# imported by the vendored circuit generators (gen); no effect on any result
+pygltflib==1.16.5

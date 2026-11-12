@@ -1,0 +1,5 @@
+decoder,reference,reason
+"Clique (SFQ on-chip decoder, ASPLOS 2023)",arXiv:2208.08547,"predecoder: reports only its own latency ('0.1 to 0.3 ns', sec. 7.4) and coverage; the residual MWPM decoder's latency is not reported -> note only."
+"Pinball (cryogenic predecoder, HPCA 2026)",arXiv:2512.09807,"predecoder: 800 ns latency budget over nine clock cycles (12.5 MHz LP / 100 MHz HP, p.11, p.13); PyMatching is the L2 decoder but its latency is not reported -> note only."
+LILLIPUT (lookup-table decoder),arXiv:2108.06569,"d <= 5 lookup table; not a scalable decoder family of this study (listed for completeness, not entered)."
+Riverlane Local Clustering Decoder,arXiv:2411.10343,"FPGA (Virtex Ultrascale+ VU19P), 'under 1 us per round' up to d = 17 (abstract p.1); exact per-distance numbers are in Fig. 3 (p.5) only, not in text -> not transcribed."

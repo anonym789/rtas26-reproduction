@@ -1,0 +1,88 @@
+--- src/cpu/embedded/src/mains/benchmark_decoding.rs.orig	2026-10-19 18:07:35.896640821 +0000
++++ src/cpu/embedded/src/mains/benchmark_decoding.rs	2026-10-20 05:14:54.521627878 +0000
+@@ -135,6 +135,17 @@
+         let syndrome_finish = syndrome_start + finish_delta;
+         unsafe { extern_c::setup_load_stall_emulator(syndrome_start, interval, context_id) };
+         // solve it
++        // E4 instrumentation (print only): obstacle reads / resolutions in the last loop iteration,
++        // i.e. after the final syndrome layer is loaded (these lie on the latency path), and in total
++        let mut e4_post_find = 0u32;
++        let mut e4_post_resolve = 0u32;
++        let mut e4_total_find = 0u32;
++        let mut e4_total_resolve = 0u32;
++        // per loop iteration: layers loaded so far, obstacle reads, resolutions (at most 64 iterations recorded)
++        let mut e4_iter_layer = [0u16; 64];
++        let mut e4_iter_find = [0u16; 64];
++        let mut e4_iter_resolve = [0u16; 64];
++        let mut e4_iters = 0usize;
+         while layer_id < NUM_LAYER_FUSION {
+             unsafe {
+                 extern_c::execute_instruction(Instruction32::load_syndrome_external(ni!(layer_id)).into(), context_id)
+@@ -156,12 +167,25 @@
+                 }
+             }
+             // solve until no obstacle is found
++            e4_post_find = 1;
++            e4_post_resolve = 0;
++            e4_total_find += 1;
+             let (mut obstacle, _) = dual_module.find_obstacle();
+             while !obstacle.is_none() {
+                 // println!("obstacle: {obstacle:?}");
+                 primal_module.resolve(dual_module, obstacle);
++                e4_post_resolve += 1;
++                e4_total_resolve += 1;
+                 (obstacle, _) = dual_module.find_obstacle();
++                e4_post_find += 1;
++                e4_total_find += 1;
+             }
++            if e4_iters < 64 {
++                e4_iter_layer[e4_iters] = layer_id as u16;
++                e4_iter_find[e4_iters] = e4_post_find as u16;
++                e4_iter_resolve[e4_iters] = e4_post_resolve as u16;
++            }
++            e4_iters += 1;
+         }
+         let cpu_wall_diff = (unsafe { extern_c::get_fast_cpu_duration_ns(fast_start) } as f64) * 1e-9;
+         let counter = unsafe { extern_c::get_instruction_counter() };
+@@ -175,11 +199,17 @@
+         let hardware_diff = unsafe { extern_c::diff_native_time(syndrome_finish, finish_time) } as f64;
+         if !DISABLE_DETAIL_PRINT {
+             println!(
+-                "[{}] time: {:.3}us, counter: {counter}, wall: {:.3}us",
++                "[{}] time: {:.3}us, counter: {counter}, wall: {:.3}us, e4: {e4_post_find} {e4_post_resolve} {e4_total_find} {e4_total_resolve} {}",
+                 defects_reader.count,
+                 hardware_diff * 1e6,
+-                cpu_wall_diff * 1e6
++                cpu_wall_diff * 1e6,
++                finish_time - syndrome_finish
+             );
++            print!("e4l:");
++            for i in 0..core::cmp::min(e4_iters, 64) {
++                print!(" {}:{}:{}", e4_iter_layer[i], e4_iter_find[i], e4_iter_resolve[i]);
++            }
++            println!("");
+         }
+         latency_benchmarker.record(hardware_diff);
+         cpu_wall_benchmarker.record(cpu_wall_diff);
+--- src/cpu/blossom/src/util.rs.orig	2026-10-19 18:19:15.709522606 +0000
++++ src/cpu/blossom/src/util.rs	2026-10-19 18:19:24.862388935 +0000
+@@ -43,7 +43,8 @@
+     {
+         Command::new("java")
+             .current_dir(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../"))
+-            .args(["-Xmx32G", "-cp", "target/scala-2.12/microblossom.jar", class_name])
++            .arg(format!("-Xmx{}", std::env::var("MB_JAVA_XMX").unwrap_or("32G".to_string()))) // E4: heap configurable
++            .args(["-cp", "target/scala-2.12/microblossom.jar", class_name])
+             .args(parameters)
+             .spawn()
+     }
+@@ -56,7 +57,8 @@
+     {
+         let output = Command::new("java")
+             .current_dir(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../"))
+-            .args(["-Xmx32G", "-cp", "target/scala-2.12/microblossom.jar", class_name])
++            .arg(format!("-Xmx{}", std::env::var("MB_JAVA_XMX").unwrap_or("32G".to_string()))) // E4: heap configurable
++            .args(["-cp", "target/scala-2.12/microblossom.jar", class_name])
+             .args(parameters)
+             .output()?;
+         String::from_utf8(output.stdout).map_err(|err| std::io::Error::new(std::io::ErrorKind::Other, err))

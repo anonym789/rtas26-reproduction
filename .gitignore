@@ -1,0 +1,305 @@
+# .gitignore of the reproduction package
+#
+# Policy: no data enter the repository by accident. Every data, figure, archive and binary file
+# type is ignored everywhere, whatever folder it sits in. A file of such a type is tracked only
+# through an explicit re-include in the last section ("Deliberate exceptions"): one entry per file
+# or folder, with a comment saying why the package needs it. Do not use `git add -f` to get around
+# this file; a forced add leaves no record of the decision.
+#
+# The rules exclude by file type, not by folder (except for the generated-output folders in
+# section 3), so that a re-include below can take effect: git cannot re-include a file whose
+# parent folder is excluded.
+#
+# Before every commit, check what git would add:
+#   git status --short --untracked-files=all
+#   git status --short --ignored --untracked-files=all    (what is held back, and why: git check-ignore -v <path>)
+
+# ---------------------------------------------------------------------------------------------
+# 1. Anonymity: files that name the authors, the group or their machines (until camera-ready)
+# ---------------------------------------------------------------------------------------------
+# local agent notes
+/CLAUDE.md
+CLAUDE.local.md
+.claude/
+# slides with the author's name
+/experiments/decoder_timing/hw/presentation/
+# environment records with the host name (user name and group)
+/experiments/network/env/ENVIRONMENT.md
+/experiments/decoder_timing/hw/env/ENVIRONMENT.md
+
+# ---------------------------------------------------------------------------------------------
+# 2. Secrets and credentials
+# ---------------------------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+.Renviron
+.netrc
+.qiskit/
+*.pem
+*.key
+*.p12
+*.pfx
+*.token
+id_rsa*
+id_ed25519*
+
+# ---------------------------------------------------------------------------------------------
+# 3. Generated outputs
+# ---------------------------------------------------------------------------------------------
+# build folders at any depth (11 Nov 2026): each analysis folder writes into its own build/
+# (analysis/*/build/); also the repository-level build/ of the template and the compiled drivers of
+# the experiments
+build/
+# figure folders of the experiment scripts' own plots (experiments/*/figures/), at any depth
+figures/
+# Rust build output of the fusion-blossom timing driver
+target/
+# all experiment data: data/ holds the recorded campaign (data/zenodo/, archived on Zenodo) and the literature
+# tables (data/literature/); the experiments and the analysis get its path as a setting (data/README.md). Only
+# data/literature/, the README files and the checksum list are tracked (re-included in section 10).
+/data/**
+
+# ---------------------------------------------------------------------------------------------
+# 4. Data and result files, by type (deny by default; see "Deliberate exceptions")
+# ---------------------------------------------------------------------------------------------
+# tables and text data
+*.[cC][sS][vV]
+*.tsv
+*.dat
+*.txt
+*.json
+*.jsonl
+*.ndjson
+*.xml
+*.arff
+*.html
+*.htm
+*.log
+*.out
+*.Rout
+# compressed files and archives (also covers *.csv.gz, *.tar.gz, *.synctex.gz)
+*.gz
+*.bz2
+*.xz
+*.zst
+*.lz4
+*.lzma
+*.zip
+*.tar
+*.tgz
+*.7z
+*.rar
+# binary, array and model data
+*.h5
+*.hdf5
+*.hdf
+*.nc
+*.parquet
+*.feather
+*.arrow
+*.npy
+*.npz
+*.pkl
+*.pickle
+*.joblib
+*.mat
+*.sav
+*.rds
+*.rda
+*.[rR][dD]ata
+*.qs
+*.fst
+*.sqlite
+*.sqlite3
+*.db
+*.duckdb
+*.onnx
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.bin
+*.raw
+# QEC circuits and samples (stim circuits, detector error models, sample formats, defect chunks)
+*.stim
+*.dem
+*.b8
+*.r8
+*.01
+*.dets
+*.ptb64
+*.hits
+*.defects
+# network and hardware traces, FPGA build products
+*.pcap
+*.pcapng
+*.trace
+*.vcd
+*.fsdb
+*.ghw
+*.wlf
+*.bit
+*.mcs
+*.dcp
+*.ltx
+# figures, images and media (generated plots and renders, including Rplots.pdf and -.png)
+*.[pP][dD][fF]
+*.[pP][nN][gG]
+*.[jJ][pP][gG]
+*.[jJ][pP][eE][gG]
+*.gif
+*.webp
+*.tif
+*.tiff
+*.bmp
+*.svg
+*.eps
+*.ps
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.wav
+*.mp3
+# office documents
+*.xlsx
+*.xls
+*.ods
+*.odt
+*.docx
+*.doc
+*.pptx
+*.ppt
+*.odp
+
+# ---------------------------------------------------------------------------------------------
+# 5. R
+# ---------------------------------------------------------------------------------------------
+.Rhistory
+.Rapp.history
+.RDataTmp
+.Ruserdata
+.Rproj.user/
+*.Rcheck/
+*.knit.md
+*.utf8.md
+rsconnect/
+# tikzDevice font-metrics cache
+*tikzDictionary*
+# renv: the lock file and renv/activate.R are tracked, the library is not
+renv/library/
+renv/local/
+renv/cellar/
+renv/lock/
+renv/python/
+renv/sandbox/
+renv/staging/
+
+# ---------------------------------------------------------------------------------------------
+# 6. LaTeX intermediates
+# ---------------------------------------------------------------------------------------------
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.lot
+*.toc
+*.run.xml
+*.synctex
+*.synctex(busy)
+*.xdv
+*.dvi
+*.nav
+*.snm
+*.vrb
+*.idx
+*.ilg
+*.ind
+*-blx.bib
+*-SAVE-ERROR
+*.auxlock
+*.dpth
+*.md5
+
+# ---------------------------------------------------------------------------------------------
+# 7. Python (template tooling; this package has no Python stage at present)
+# ---------------------------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ipynb_checkpoints/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+*.egg-info/
+
+# ---------------------------------------------------------------------------------------------
+# 8. Nix
+# ---------------------------------------------------------------------------------------------
+/result
+/result-*
+.direnv/
+
+# ---------------------------------------------------------------------------------------------
+# 9. Editors, operating systems, backups
+# ---------------------------------------------------------------------------------------------
+.DS_Store
+._*
+Thumbs.db
+desktop.ini
+.directory
+.Trash-*/
+.nfs*
+*~
+*.swp
+*.swo
+\#*\#
+.#*
+.vscode/
+.idea/
+*.code-workspace
+*.bak
+*.orig
+*.rej
+*.tmp
+*.temp
+*.save
+*.old
+
+# ---------------------------------------------------------------------------------------------
+# 10. Deliberate exceptions
+# ---------------------------------------------------------------------------------------------
+# Re-include data here, one entry per file or folder, each with a comment saying why the package
+# needs it and where it comes from. Example (do not uncomment without deciding it):
+#   # reference statistics compared by `make check` (step 5); copied from experiments/rtas/trip_time/stats
+#   !/reproduction/data/reference/*.csv
+#
+# Tool metadata of an otherwise ignored type (not data):
+# renv's project settings, tracked together with renv.lock if the environment is pinned with renv
+!/renv/settings.json
+# Python dependency lists of the experiments (their .venv folders are not copied; rebuild from these)
+!requirements*.txt
+# CMake build descriptions of the C++ timing drivers (source code, not data)
+!/experiments/decoder_timing/drivers/*/CMakeLists.txt
+# vendored third-party input: the noiseless bivariate-bicycle memory circuits from the tesseract-decoder test
+# data (68 kB, commit in vendor/VENDOR.md); the BB syndromes are generated from them
+!/experiments/decoder_timing/vendor/tesseract_circuits/*.noiseless.stim
+# GPU state during the hardware experiment's GPU runs (driver, CUDA, clocks, decoder versions; written by
+# `make gpu`, cited by experiments/decoder_timing/hw/README.md); an environment record, no names
+!/experiments/decoder_timing/hw/env/gpu_env.txt
+# data/: the folders (so that git looks inside), the README files and the checksum list; these describe
+# and verify the data, they are not data themselves
+!/data/**/
+!/data/**/README.md
+!/data/SHA256SUMS
+# data/literature/: the sourced constants and third-party data the experiments read (no experiment produces them),
+# each value with its source
+!/data/literature/**
+#
+# Data: (none yet)

@@ -1,0 +1,17 @@
+parameter,value,unit,source
+cycle_ns,1100,ns,"superconducting syndrome cycle (Google Willow, 72 qubits)"
+ms_cycle_ns,41900000,ns,"neutral atoms: one logical teleportation layer as the loop period (Bluvstein et al. 2025), as in the trip-time study"
+reaction_budget_ns,10000,ns,"reaction budget assumed in superconducting resource estimates (Gidney 2021, 2025)"
+qubits_per_controller,16,qubits,"Liu et al. (ZCU216 board, 14 qubits); XCOM/QICK boards"
+qubits_per_controller,64,qubits,Mohseni et al. (64 qubits per controller); E1 chassis counts
+qubits_per_controller,256,qubits,Hoefler and Troyer; Mohseni et al. (dense future controller)
+bits_per_outcome,1,bits,hard outcome (CryoZip assumes 1)
+bits_per_outcome,4,bits,soft outcome (Mohseni et al. example)
+header_bits,64,bits,8 B application header in every frame (assumption; no source states its size)
+eth_overhead_bits,304,bits,MAC header 14 + FCS 4 + preamble/SFD 8 + inter-frame gap 12 bytes (IEEE 802.3)
+eth_min_wire_bits,672,bits,64 B minimum frame + preamble/SFD + IFG on the wire (IEEE 802.3; Sakata et al.)
+aggregation_delay_ns,450,ns,processing of an aggregating node: Sakata et al.'s measured aggregator
+port_cap_k,7,controllers,controllers per leaf of the port-capped tree: the U55 aggregator's eight 10GbE ports minus the uplink (Sakata et al. sec. 2.2 and Table 1)
+root_max_ports,34,ports,"largest published root fan-in: VCU129, 34 GTs (Liu et al. sec. V-B1)"
+anchor_cycle_ns,500,ns,saturation anchor: Sakata et al. send an 84 B frame every 500 ns
+anchor_frame_bits,672,bits,saturation anchor: the 84 B frame of Sakata et al. on the wire

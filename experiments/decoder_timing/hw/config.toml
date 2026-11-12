@@ -1,0 +1,179 @@
+# Hardware decoder experiment: Relay-BP on the FPGA (transferred from per-shot iteration counts) and on the GPU
+# (measured), and Micro Blossom (cycle-accurate simulation with board correction), for the configurations of the
+# paper. Every setting of a run is in this file; the Makefile and `python -m qechw` read it. Paths are relative to it.
+
+[paths]
+literature = "../../../data/literature"               # micro_blossom/: the artifact's board histograms and batch means
+data = "../../../data/zenodo/decoder_timing/hw"           # the recorded campaign (if present): raw/, level2/logs*, the tables `make check` regenerates
+campaign = "../../../build/data/decoder_timing/hw"        # campaign the statistics and calibration read (raw/, level2/logs*): this experiment's own
+output = "../../../build/data/decoder_timing/hw"          # everything the experiment writes (the layout of data/zenodo/decoder_timing/hw)
+check = "../../../build/check/decoder_timing/hw"          # where `make check` regenerates the recorded tables
+e2_syndromes = "../../../build/data/decoder_timing/syndromes"   # syndromes of the CPU experiment (`make syndromes` there; Micro Blossom input, GPU fallback)
+
+# bivariate-bicycle syndromes of the transfer and GPU runs (`make syndromes`): at the error rates in shared_p they are the
+# CPU experiment's syndromes (its seeds), at the others seeded with 400000 + 1000 d + round(1e5 p)
+[syndromes]
+code = "bb"
+d = [6, 12]
+p = [0.001]
+shared_p = [0.001]
+shots = 100000
+
+# ---------------------------------------------------------------------------------------------------------------
+# Relay-BP: the configuration of IBM's FPGA implementation (arXiv 2510.21600, Fig. 7 caption p. 11, Fig. 8 caption p. 15)
+[relay]
+gamma0 = 0.125
+gamma_interval = [-0.24, 0.66]
+pre_iter = 80           # T0
+set_max_iter = 60       # Tr
+num_sets = 600          # R
+# FPGA timing: 12 ns decoder clock, two clocks per flooding iteration (abstract; sec. 5 p. 9); no fixed per-call
+# overhead is stated, so c0 = 0 and the hard bound is 24 ns x (T0 + R Tr) = 865,920 ns per 12-cycle window
+ns_per_iteration = 24.0
+c0_ns = 0.0
+source = "arXiv:2510.21600 (24 ns/iteration, abstract + sec. 5; parameters Fig. 7/8 captions)"
+
+[relay.variants.relaybp1]
+stop_nconv = 1
+description = "Relay-BP-1, float32 messages (sec. 1 convergence statement)"
+
+# integer emulation: relay-bp's integer decoder with message magnitudes bounded to 4 bits plus sign and priors scaled
+# by 2; the FPGA's quantisation of the memory strengths to multiples of 1/8 is not emulated
+[relay.variants.relaybp1int4]
+stop_nconv = 1
+integer = true
+max_data_value = 15.0
+data_scale_value = 2.0
+description = "Relay-BP-1, integer messages bounded to 4 magnitude bits + sign, prior scale 2 (int4.2.x emulation)"
+
+# ---------------------------------------------------------------------------------------------------------------
+# Relay-BP work-counter transfer: counts only, so any machine gives the same result (`make transfer`)
+[transfer]
+workers = 0             # processes; 0 = all cores but two
+chunk = 2000            # shots per process; the decoders of chunk k are seeded with 1000 k (X) and 1000 k + 1 (Z)
+log_legs = 10000        # shots, from the start, with per-leg logging
+runs = [
+    { variant = "relaybp1", d = 12, p = 0.001 },
+    { variant = "relaybp1", d = 6, p = 0.001 },
+    # non-converging shots run the full 36,080-iteration budget
+    { variant = "relaybp1int4", d = 12, p = 0.001, shots = 20000 },
+    { variant = "relaybp1int4", d = 6, p = 0.001, shots = 20000 },
+]
+
+# ---------------------------------------------------------------------------------------------------------------
+# GPU: Relay-BP in NVIDIA CUDA-Q QEC (nv-qldpc-decoder) on one A100, single shot, timed on the host (`make gpu`)
+[gpu]
+host = ""               # ssh host with the GPU for `make gpu-remote`; `make gpu` runs on this machine
+remote_root = "rtas_reproduction"   # the repository on that host
+device = 0
+sm_clock_mhz = 1410     # SM clock locked for the runs (nvidia-smi -lgc, needs sudo) and reset afterwards
+reps = 3                # interleaved passes
+warmup = 1000
+cupti_shots = 2000      # shots of the kernel-timing pass (CUPTI)
+batch_shots = 4096
+batch_sizes = [1, 16, 256, 4096]
+source = "measured; CUDA-Q QEC nv-qldpc-decoder (closed binary, NVIDIA SLA), config as arXiv 2510.21600 Fig. 7/8"
+runs = [
+    { variant = "relaybp1", d = 12, p = 0.001 },
+    { variant = "relaybp1", d = 6, p = 0.001 },
+]
+
+[gpu.variants.relaybp1]
+stopping_criterion = "FirstConv"
+
+# ---------------------------------------------------------------------------------------------------------------
+# Micro Blossom (arXiv 2502.14787, repository commit 468af5d, artifact 10.5281/zenodo.14773458)
+[microblossom]
+# accelerator clocks of the published designs (Table 4) and the board latency histograms of the same syndromes
+freq_hz = { 9 = 93e6, 13 = 62e6 }
+board_histogram = { 9 = "d_9_p_1.0000e-03_N_100000.txt", 13 = "d_13_p_1.0000e-03_N_100000.txt" }
+layers_board = { 9 = 9, 13 = 13 }       # syndrome layers per shot, artifact syndromes
+layers_ours = { 9 = 10, 13 = 14 }       # syndrome layers per shot, the CPU experiment's syndromes
+# bus read latency read(f) = a + b / f[MHz], fitted to the artifact's BRAM speed measurements
+# (benchmark/hardware/bram_speed/data.txt: 180 ns at 100 MHz, 126.6 ns at 200 MHz, 105.7 ns at 348 MHz)
+read_latency_a_ns = 73.2
+read_latency_b_ns_mhz = 10680.0
+batch_timeline = "batch fit"            # "batch fit" or "stream-mode a, b": CPU cost used for the batch rows
+
+# the CPU experiment's syndromes written as Micro Blossom input (`make mb-inputs`)
+convert = [ { d = 9, p = 0.001 }, { d = 13, p = 0.001 } ]
+container = "mbsim"   # name of the running simulation container
+
+# chunks of the simulated syndromes (written by level2/scripts/split_defects.py): shots per chunk file, number of
+# chunks, suffix of the chunk folder
+chunks = { 9 = { shots = 2000, count = 25, tag = "" }, 13 = { shots = 2500, count = 8, tag = "_2500" } }
+
+# simulation logs collected into per-shot tables (`make mb-collect`): the batch runs on the artifact's batch syndromes
+# (fit and validation of the CPU timeline) and on the CPU experiment's syndromes (the rows of the paper), and the stream
+# run on the artifact's board syndromes at d = 9 (the stream-mode CPU timeline the batch validation compares with)
+collect = [
+    { source = "board", d = 9, mode = "stream" },
+    { source = "ours", d = 9, mode = "batch" },
+    { source = "ours", d = 13, mode = "batch", chunk = 2500 },
+    { source = "boardbatch", d = 9, mode = "batch" },
+    { source = "boardbatch", d = 13, mode = "batch", chunk = 2500 },
+]
+
+# simulation inputs per source inside the container: decoding graph, defects file of chunk {k} (folder suffix {tag}),
+# syndrome layers per shot (layers_board or layers_ours)
+[microblossom.sources.board]
+graph = "/root/board/d_{d}_p_1.0000e-03_N_100000.json"
+defects = "/root/level2/chunks/board_d{d}{tag}/d_{d}_p_1.0000e-03_N_100000.c{k:03d}.defects"
+layers = "board"
+
+[microblossom.sources.boardbatch]
+graph = "/root/board/d_{d}_p_1.0000e-03_N_100000.json"
+defects = "/root/level2/chunks/boardbatch_d{d}{tag}/d_{d}_p_1.0000e-03_N_100000.c{k:03d}.defects"
+layers = "board"
+
+[microblossom.sources.ours]
+graph = "/root/level2/inputs/surface_d{d}_p0.001.graph.json"
+defects = "/root/level2/chunks/ours_d{d}{tag}/surface_d{d}_p0.001.c{k:03d}.defects"
+layers = "ours"
+
+# simulation queues, run in this order inside the micro-blossom:e4 container (`container`) on the simulation host
+# (`make mb-sim`). A queue runs level2/scripts/run_queue.sh on its job list with the driver of its mode; the list holds
+# one block per entry of `jobs`, and a block runs the chunks of its distance in order, each for every source listed.
+# `prep` first clones the slots of an earlier queue with their compiled Verilator model and applies the print of the
+# final matching (level2/scripts/prep_slots.sh; `map` "new:old ..." picks the old slot of each new slot, so that it
+# holds the model of the graph it will simulate). The two stream queues provide those slots.
+[[microblossom.queues]]
+prefix = "s9_"
+slots = 25
+mode = "stream"
+logs = "logs"
+jobs = [ { d = 9, sources = ["board", "ours"] } ]
+
+[[microblossom.queues]]
+prefix = "s13_"
+slots = 16
+mode = "stream"
+logs = "logs"
+jobs = [ { d = 13, sources = ["board", "ours"] } ]
+java_heap = "32G"
+
+[[microblossom.queues]]
+prefix = "b9_"
+slots = 25
+mode = "batch"
+logs = "logs_batch"
+jobs = [ { d = 9, sources = ["board"] }, { d = 9, sources = ["ours"] }, { d = 9, sources = ["boardbatch"] } ]
+prep = { from = "s9_" }
+
+[[microblossom.queues]]
+prefix = "b13_"
+slots = 16
+mode = "batch"
+logs = "logs_batch"
+jobs = [ { d = 13, sources = ["board", "ours"] } ]
+java_heap = "32G"
+prep = { from = "s13_" }
+
+[[microblossom.queues]]
+prefix = "c13_"
+slots = 8
+mode = "batch"
+logs = "logs_batch"
+jobs = [ { d = 13, sources = ["boardbatch"] } ]
+java_heap = "32G"
+prep = { from = "s13_", map = "0:1 1:3 2:5 3:7 4:9 5:11 6:13 7:15" }

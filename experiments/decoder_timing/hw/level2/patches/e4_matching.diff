@@ -1,0 +1,18 @@
+--- src/cpu/embedded/src/mains/benchmark_decoding.rs.orig	2026-10-28 14:13:28.383180217 +0000
++++ src/cpu/embedded/src/mains/benchmark_decoding.rs	2026-10-28 14:13:28.384180203 +0000
+@@ -210,6 +210,15 @@
+                 print!(" {}:{}:{}", e4_iter_layer[i], e4_iter_find[i], e4_iter_resolve[i]);
+             }
+             println!("");
++            // E4 matching print (print only, after the timed region): the final matching of the CPU primal module as
++            // node pairs "n-m" (node = position in this shot's defect list) or "n-vK" (virtual vertex K); defects that
++            // are absent were matched by the accelerator's offloading and never reached the CPU
++            print!("e4m:");
++            primal_module.iterate_perfect_matching(|_, node, target, _| match target {
++                micro_blossom_nostd::util::CompactMatchTarget::Peer(peer) => print!(" {}-{}", node.get(), peer.get()),
++                micro_blossom_nostd::util::CompactMatchTarget::VirtualVertex(vertex) => print!(" {}-v{}", node.get(), vertex.get()),
++            });
++            println!("");
+         }
+         latency_benchmarker.record(hardware_diff);
+         cpu_wall_benchmarker.record(cpu_wall_diff);

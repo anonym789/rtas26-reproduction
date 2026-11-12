@@ -1,0 +1,10 @@
+[project]
+name = "qechw"
+version = "1.0.0"
+description = "Hardware decoders: Relay-BP on FPGA (transferred) and GPU (measured), Micro Blossom (cycle-accurate simulation with board correction)"
+requires-python = ">=3.12"
+dependencies = ["numpy", "pandas", "scipy", "stim", "relay-bp", "beliefmatching"]   # pinned versions: env/requirements.txt
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = [".", ".."]   # qechw, and qecdec of the CPU experiment

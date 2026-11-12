@@ -1,0 +1,16 @@
+# Not copied into the image: version control, generated and recorded data (build/ is mounted, data/zenodo is mounted
+# read-only when present), virtual environments, compiled drivers and caches, and the files that .gitignore holds back
+# for anonymity.
+.git
+build
+data/zenodo
+**/.venv
+**/build
+**/target
+**/__pycache__
+**/.pytest_cache
+CLAUDE.md
+.claude
+experiments/decoder_timing/hw/presentation
+experiments/network/env/ENVIRONMENT.md
+experiments/decoder_timing/hw/env/ENVIRONMENT.md

@@ -1,0 +1,67 @@
+# Timing of QEC decoders on a CPU (paper: Fig. 4, S1, CPU row). Every setting of the campaign is in this file;
+# the sourced speed anchor is the table decoder_anchors.csv in paths.literature. The Makefile, campaign.sh and
+# `python -m qecdec` read it. Paths are relative to this file.
+
+[paths]
+literature = "../../data/literature"            # decoder_anchors.csv
+data = "../../data/zenodo/decoder_timing"         # the recorded campaign (if present): raw/, syndromes/index.csv, the tables `make check` regenerates
+campaign = "../../build/data/decoder_timing"      # campaign the statistics and checks read (its raw/ and syndromes/index.csv): this experiment's own
+output = "../../build/data/decoder_timing"        # syndromes, graphs, measurements, statistics, SANITY.md (the layout of data/zenodo/decoder_timing)
+check = "../../build/check/decoder_timing"        # where `make check` regenerates the recorded tables
+
+# codes, noise and grid; rounds = d for every code
+#   surface: Stim rotated planar surface code, Z memory (Stim generator, noise stripped)
+#   color:   superdense 6.6.6 colour code, Z memory (clorco generator, Gidney & Jones 2023)
+#   bb:      bivariate bicycle codes, Z memory (Bravyi et al. 2024 cycle, tesseract-decoder circuits)
+[grid]
+codes = ["surface", "color", "bb"]
+distances = { surface = [3, 5, 7, 9, 11, 13, 15, 17, 21, 25], color = [3, 5, 7, 9, 11, 13, 15], bb = [6, 12] }
+bb_instance = { 6 = "bb_72_12_6", 12 = "bb_144_12_12" }
+error_rates = [1e-3, 3e-3, 5e-3]
+noise_model = "gen.NoiseModel.uniform_depolarizing"   # for every code (vendored Chromobius v1.1.1)
+shots = 100000
+shots_large_surface = 20000                           # surface code with d > 17
+
+[decoders]
+names = ["pymatching", "fusionblossom", "chromobius", "bposd", "bplsd", "bp"]
+for_code = { surface = ["pymatching", "fusionblossom", "bposd"], color = ["chromobius", "bposd"], bb = ["bposd", "bplsd"] }
+native = ["pymatching", "fusionblossom", "chromobius"]   # timed by the C++/Rust drivers
+bposd_max_d = { surface = 15, color = 15, bb = 99 }      # OSD cost explodes beyond d = 15
+bp_max_iter = 30
+bp_method = "product_sum"    # the stimbposd default, for BP+OSD and BP+LSD alike
+osd_order = 0
+osd_method = "osd_0"
+lsd_order = 0
+lsd_method = "lsd_0"
+
+[measurement]
+reps = 3                      # interleaved passes
+reps_for_code = { bb = 1 }    # BB: one pass of 1e5 shots (interference 0.3 % for Python-timed decoders)
+warmup_shots = 1000           # untimed warm-up
+floor_calls = 10000           # all-zero-syndrome calls for the call-overhead floor
+batch_size = 1000             # batch timing for fast Python-timed decodes (plain BP only)
+batch_if_below_x_floor = 20.0
+# wall-clock guard for the Python-timed decoders, seconds per grid point and pass
+max_seconds_per_rep = { bp = 5400, bposd = 7200, bplsd = 7200 }
+max_seconds_per_rep_bb = 43200   # BB: one pass, 1e5 shots at about 0.35 s per shot
+min_shots = 2000
+skip_bposd_above_ns = 1e9        # BP+OSD grid points whose pilot mean exceeds 1 s per shot are skipped
+
+[checks]
+anchor = "sparse_blossom_d17"    # row of decoder_anchors.csv; the campaign stops if the measurement misses it
+anchor_tolerance = 2.0           # by more than this factor
+stability_points = [
+    { decoder = "pymatching", code = "surface", d = 5, p = 1e-3 },
+    { decoder = "pymatching", code = "surface", d = 17, p = 1e-3 },
+]
+seed_check = { decoder = "pymatching", code = "surface", d = 13, p = 3e-3, seed_offset = 7919 }
+
+# the measurement machine (campaign.sh, and push/run/status/pull from another machine)
+[campaign]
+core = 96                # measurement core
+bp_cores = ""            # cores of the BP+OSD / BP+LSD queue; empty: the 12 quietest L3 complexes of bp_socket
+bp_socket = 1
+set_cpufreq = true       # fix the frequency of the measurement cores (env/cpufreq.sh, needs root)
+stop_on_anchor = true    # stop the campaign when the speed anchor fails
+host = ""                # ssh host of the measurement machine for push/run/status/pull
+remote_root = "rtas_reproduction"   # the repository on that host
